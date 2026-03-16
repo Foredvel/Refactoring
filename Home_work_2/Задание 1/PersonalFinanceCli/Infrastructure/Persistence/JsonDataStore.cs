@@ -18,29 +18,30 @@ public sealed class JsonDataStore
         };
     }
 
+    private DataFile emptyDataFile()
+    {
+        var empty = new DataFile();
+        Save(empty);
+        return empty;
+    }
+
     public DataFile Load()
     {
         if (!File.Exists(_filePath))
         {
-            var empty = new DataFile();
-            Save(empty);
-            return empty;
+            return emptyDataFile();
         }
 
         var json = File.ReadAllText(_filePath);
         if (string.IsNullOrWhiteSpace(json))
         {
-            var empty = new DataFile();
-            Save(empty);
-            return empty;
+            return emptyDataFile();
         }
 
         var result = JsonSerializer.Deserialize<DataFile>(json, _options);
         if (result == null)
         {
-            var empty = new DataFile();
-            Save(empty);
-            return empty;
+            return emptyDataFile();
         }
 
         result.Cards ??= new List<Card>();
