@@ -1,4 +1,5 @@
 using PersonalFinanceCli.Application.Repositories;
+using static Validation.Utility.ValidationOperation;
 
 namespace PersonalFinanceCli.Application.CommandHandlers;
 
@@ -14,10 +15,7 @@ public sealed class SetDefaultCardHandler
     public void Handle(int cardId)
     {
         var card = _cardRepository.GetById(cardId);
-        if (card is null)
-        {
-            throw new InvalidOperationException("Card not found.");
-        }
+        ErrorCatcher(card is null, Error.CardNotFound);
 
         _cardRepository.SetDefault(cardId);
     }

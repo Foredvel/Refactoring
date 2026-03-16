@@ -1,6 +1,7 @@
 using PersonalFinanceCli.Application.Repositories;
 using PersonalFinanceCli.Domain.Entities;
 using PersonalFinanceCli.Domain.ValueObjects;
+using static Validation.Utility.ValidationOperation;
 
 namespace PersonalFinanceCli.Application.CommandHandlers;
 
@@ -15,15 +16,10 @@ public sealed class AddCardHandler
 
     public Card Handle(string name, string currencyRaw, decimal? initialBalance)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new InvalidOperationException("Card name cannot be empty.");
-        }
 
-        if (!Enum.TryParse<Currency>(currencyRaw, true, out var currency))
-        {
-            throw new InvalidOperationException("Unknown currency. Allowed: RUB, EUR.");
-        }
+        ErrorCatcher(string.IsNullOrWhiteSpace(name), Error.CardNameCannotBeEmpty);
+
+        ErrorCatcher(!Enum.TryParse<Currency>(currencyRaw, true, out var currency), Error.UnknownCurrencyAllowedRUBEUR);
 
         var card = new Card
         {

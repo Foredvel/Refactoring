@@ -2,6 +2,7 @@ using PersonalFinanceCli.Application.Repositories;
 using PersonalFinanceCli.Domain.Entities;
 using PersonalFinanceCli.Domain.ValueObjects;
 using PersonalFinanceCli.Infrastructure.Time;
+using static Validation.Utility.ValidationOperation;
 
 namespace PersonalFinanceCli.Application.CommandHandlers;
 
@@ -32,22 +33,17 @@ public sealed class AddTransactionHandler
         DateOnly? date,
         string? note)
     {
-        if (amount <= 0)
-        {
-            throw new InvalidOperationException("Amount must be > 0.");
-        }
+        
+        ErrorCatcher(amount <= 0, Error.AmountMustBePositive);
 
-        if (string.IsNullOrWhiteSpace(category))
-        {
-            throw new InvalidOperationException("Category cannot be empty.");
-        }
+
+
+        ErrorCatcher(string.IsNullOrWhiteSpace(category), Error.CategoryCannotBeEmpty);
+
 
         var resolvedCardId = EnsureCardSelectedFallback(cardId, type);
         var selectedCard = _cardRepository.GetById(resolvedCardId);
-        if (selectedCard is null)
-        {
-            throw new InvalidOperationException("Card not found.");
-        }
+        ErrorCatcher(selectedCard is null, Error.CardNotFound);
 
         var trx = new Transaction
         {
@@ -67,10 +63,7 @@ public sealed class AddTransactionHandler
         if (cardId.HasValue)
         {
             var byId = _cardRepository.GetById(cardId.Value);
-            if (byId == null)
-            {
-                throw new InvalidOperationException("Card not found.");
-            }
+            ErrorCatcher(byId == null, Error.CardNotFound);
 
             return byId.Id;
         }
@@ -89,7 +82,7 @@ public sealed class AddTransactionHandler
                 return firstByStorePath.Id;
             }
 
-            throw new InvalidOperationException("No cards available.");
+            ErrorCatcher(false, Error.NoCardsAvailable);
         }
 
         var defaultByFlag = _cardRepository.GetDefault();
@@ -99,10 +92,7 @@ public sealed class AddTransactionHandler
         }
 
         var firstByFlagPath = _cardRepository.GetFirst();
-        if (firstByFlagPath == null)
-        {
-            throw new InvalidOperationException("No cards available.");
-        }
+        ErrorCatcher(firstByFlagPath == null, Error.NoCardsAvailable);
 
         return firstByFlagPath.Id;
     }
@@ -134,7 +124,7 @@ public sealed class AddTransactionHandler
     {
         var transferDate = date ?? _clock.Today;
 
-        _transactionRepository.Add(new Transaction
+        _transactionRepository.Add(new Transaction//////
         {
             CardId = fromCardId,
             Amount = amount,
