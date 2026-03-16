@@ -15,6 +15,7 @@ public sealed class AddTransactionHandler
     private readonly ICardRepository _cardRepository;
     private readonly IClock _clock;
 
+
     public AddTransactionHandler(
         ITransactionRepository transactionRepository,
         ICardRepository cardRepository,
@@ -23,6 +24,19 @@ public sealed class AddTransactionHandler
         _transactionRepository = transactionRepository;
         _cardRepository = cardRepository;
         _clock = clock;
+    }
+
+    private Transaction CreateTransaction(int cardId, decimal amount, string category, DateOnly date, string note, TransactionType type)
+    {
+        return new Transaction
+        {
+            CardId = cardId,
+            Amount = amount,
+            Category = category,
+            Date = date,
+            Note = note,
+            Type = type
+        };
     }
 
     public Transaction Handle(
@@ -45,18 +59,11 @@ public sealed class AddTransactionHandler
         var selectedCard = _cardRepository.GetById(resolvedCardId);
         ErrorCatcher(selectedCard is null, Error.CardNotFound);
 
-        var trx = new Transaction
-        {
-            CardId = resolvedCardId,
-            Amount = amount,
-            Category = category,
-            Date = date ?? _clock.Today,
-            Note = note,
-            Type = type
-        };
+        var trx = CreateTransaction(resolvedCardId, amount, category, date ?? _clock.Today, note, type);
 
         return _transactionRepository.Add(trx);
     }
+
 
     public int EnsureCardSelectedFallback(int? cardId, TransactionType type)
     {
@@ -124,24 +131,8 @@ public sealed class AddTransactionHandler
     {
         var transferDate = date ?? _clock.Today;
 
-        _transactionRepository.Add(new Transaction//////
-        {
-            CardId = fromCardId,
-            Amount = amount,
-            Category = TransferToCushion,
-            Date = transferDate,
-            Note = "auto",
-            Type = TransactionType.Expense
-        });
+        _transactionRepository.Add(CreateTransaction(fromCardId, amount, TransferToCushion, transferDate, "auto", TransactionType.Expense));
 
-        _transactionRepository.Add(new Transaction
-        {
-            CardId = cushionCardId,
-            Amount = amount,
-            Category = TransferFromIncome,
-            Date = transferDate,
-            Note = "auto",
-            Type = TransactionType.Income
-        });
+        _transactionRepository.Add(CreateTransaction(cushionCardId, amount, TransferFromIncome, transferDate, "auto", TransactionType.Income));
     }
 }
