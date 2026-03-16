@@ -50,24 +50,14 @@ public sealed class CushionService
     {
         var hasSalaryWord = category.Contains("Зарплата", StringComparison.OrdinalIgnoreCase);
 
+        
+
+
         if (incomeAmount < 10m)
         {
-            if (hasSalaryWord)
-            {
-                return 1m;
-            }
-
             return 1m;
         }
-        else
-        {
-            if (hasSalaryWord)
-            {
-                return Floor2(incomeAmount * 0.20m);
-            }
-
-            return Floor2(incomeAmount * 0.10m);
-        }
+        return (hasSalaryWord) ? Floor2(incomeAmount * 0.20m) : Floor2(incomeAmount * 0.10m);
     }
 
     public static decimal Floor2(decimal value)
