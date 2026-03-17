@@ -28,15 +28,15 @@ public sealed class CommandParser
         ErrorCatcher(tokens.Count == 0, Error.CommandIsEmpty);
 
         var root = tokens[0].ToLowerInvariant();
-        switch (root)
+        return root switch
         {
             Card => ParseCard(tokens),
             Expense => ParseTransaction(tokens, TransactionType.Expense),
             Income => ParseTransaction(tokens, TransactionType.Income),
             Limit => ParseLimit(tokens),
-            Report => ParseReport(tokens);
+            Report => ParseReport(tokens),
             _ => throw new InvalidOperationException("Unknown command.")
-        }
+        };
     }
 
     private static ParsedCommand ParseCard(IReadOnlyList<string> tokens)
@@ -44,37 +44,38 @@ public sealed class CommandParser
        ErrorCatcher(tokens.Count < 2, Error.CardCommandIsIncomplete);
 
         var action = tokens[1].ToLowerInvariant();
-
-        if (action == "add")
+        switch (action)
         {
-            ErrorCatcher(tokens.Count < 4, Error.CardAddRequires);
+            case "add":
+                {
+                    ErrorCatcher(tokens.Count < 4, Error.CardAddRequires);
 
-            decimal? initial = null;
-            if (tokens.Count >= 5)
-            {
-                ErrorCatcher(!decimal.TryParse(tokens[4], out var value), Error.InvalidInitialBalance);
+                    decimal? initial = null;
+                    if (tokens.Count >= 5)
+                    {
+                        ErrorCatcher(!decimal.TryParse(tokens[4], out var value), Error.InvalidInitialBalance);
 
 
-                initial = value;
-            }
+                        initial = value;
+                    }
 
-            return new CardAddCommand(tokens[2], tokens[3], initial);
+                    return new CardAddCommand(tokens[2], tokens[3], initial);
+                }
+            case "list":
+                {
+                    return new CardListCommand();
+                }
+            case "set-default":
+                {
+                    ErrorCatcher(tokens.Count < 3, Error.CardSetDefault);
+                    ErrorCatcher(!int.TryParse(tokens[2], out var cardId), Error.CardSetDefault);
+                    return new CardSetDefaultCommand(cardId);
+                }
+            default:
+                {
+                    throw new InvalidOperationException("Unknown command.");
+                }
         }
-
-        if (action == "list")
-        {
-            return new CardListCommand();
-        }
-
-        if (action == "set-default")
-        {   
-            ErrorCatcher(tokens.Count < 3, Error.CardSetDefault);
-            ErrorCatcher(!int.TryParse(tokens[2], out var cardId), Error.CardSetDefault);
-
-            return new CardSetDefaultCommand(cardId);
-        }
-
-        throw new InvalidOperationException("Unknown command.");
     }
 
     private static ParsedCommand ParseTransaction(IReadOnlyList<string> tokens, TransactionType type)
@@ -122,6 +123,7 @@ public sealed class CommandParser
 
                         ErrorCatcher(!parsedCardId.HasValue, Error.InvalidÑardValue);
                         cardId = parsedCardId;
+                        break;
                     }
                 case "--date":
                     {
@@ -129,12 +131,14 @@ public sealed class CommandParser
                         ErrorCatcher(i >= tokens.Count, Error.InvalidDateValue);
                         ErrorCatcher(!DateOnly.TryParse(tokens[i], out var parsedDate), Error.InvalidDateValue);
                         date = parsedDate;
+                        break;
                     }
                 case "--note":
                     {
                         i++;
                         ErrorCatcher(i >= tokens.Count, Error.InvalidNoteValue);
                         note = tokens[i];
+                        break;
                     }
                 default:
                     {
