@@ -24,31 +24,19 @@ public sealed class CommandParser
 
     private ParsedCommand Parse(IReadOnlyList<string> tokens)
     {
-        
+
         ErrorCatcher(tokens.Count == 0, Error.CommandIsEmpty);
 
         var root = tokens[0].ToLowerInvariant();
-        if (root == Card)
+        switch (root)
         {
-            return ParseCard(tokens);
+            Card => ParseCard(tokens),
+            Expense => ParseTransaction(tokens, TransactionType.Expense),
+            Income => ParseTransaction(tokens, TransactionType.Income),
+            Limit => ParseLimit(tokens),
+            Report => ParseReport(tokens);
+            _ => throw new InvalidOperationException("Unknown command.")
         }
-
-        if (root == Expense || root == Income)
-        {
-            return ParseTransaction(tokens, root == Income ? TransactionType.Income : TransactionType.Expense);
-        }
-
-        if (root == Limit)
-        {
-            return ParseLimit(tokens);
-        }
-
-        if (root == Report)
-        {
-            return ParseReport(tokens);
-        }
-
-        throw new InvalidOperationException("Unknown command.");
     }
 
     private static ParsedCommand ParseCard(IReadOnlyList<string> tokens)
