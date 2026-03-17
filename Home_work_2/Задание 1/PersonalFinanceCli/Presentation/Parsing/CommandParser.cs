@@ -120,37 +120,40 @@ public sealed class CommandParser
         var i = startIndex;
         while (i < tokens.Count)
         {
+
             var option = tokens[i];
-            if (option == "--card")
+            switch (option)
             {
-                i++;
+                case "--card":
+                    {
+                        i++;
 
-                ErrorCatcher(i >= tokens.Count, Error.InvalidÑardValue);
+                        ErrorCatcher(i >= tokens.Count, Error.InvalidÑardValue);
 
-                var parsedCardId = ResolveCardFromArgs(tokens[i]);
+                        var parsedCardId = ResolveCardFromArgs(tokens[i]);
 
-                ErrorCatcher(!parsedCardId.HasValue, Error.InvalidÑardValue);
-                cardId = parsedCardId;
+                        ErrorCatcher(!parsedCardId.HasValue, Error.InvalidÑardValue);
+                        cardId = parsedCardId;
+                    }
+                case "--date":
+                    {
+                        i++;
+                        ErrorCatcher(i >= tokens.Count, Error.InvalidDateValue);
+                        ErrorCatcher(!DateOnly.TryParse(tokens[i], out var parsedDate), Error.InvalidDateValue);
+                        date = parsedDate;
+                    }
+                case "--note":
+                    {
+                        i++;
+                        ErrorCatcher(i >= tokens.Count, Error.InvalidNoteValue);
+                        note = tokens[i];
+                    }
+                default:
+                    {
+                        throw new InvalidOperationException($"Unknown option {option}");
+                    }
             }
-            else if (option == "--date")
-            {
-                i++;
-                ErrorCatcher(i >= tokens.Count , Error.InvalidDateValue);
-                ErrorCatcher(!DateOnly.TryParse(tokens[i], out var parsedDate), Error.InvalidDateValue);
-                date = parsedDate;
-            }
-            else if (option == "--note")
-            {
-                i++;
-                ErrorCatcher(i >= tokens.Count, Error.InvalidNoteValue);
-                note = tokens[i];
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unknown option {option}");
-
-            }
-
+        
             i++;
         }
 
@@ -252,3 +255,6 @@ public sealed record LimitSetCommand(decimal Amount) : ParsedCommand;
 public sealed record LimitShowCommand : ParsedCommand;
 
 public sealed record ReportDayCommand(DateOnly? Date) : ParsedCommand;
+
+
+
