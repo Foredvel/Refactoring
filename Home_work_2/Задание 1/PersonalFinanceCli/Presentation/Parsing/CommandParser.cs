@@ -194,7 +194,7 @@ public sealed class CommandParser
 
     private static ParsedCommand ParseReport(IReadOnlyList<string> tokens)
     {
-        ErrorCatcher(tokens.Count < 2 || tokens[1].ToLowerInvariant() != "day", Error.ReportDayIsTheOnlySupportedReportCommand);
+        ErrorCatcher(OutOfMassive(tokens), Error.ReportDayIsTheOnlySupportedReportCommand);
 
         if (tokens.Count == 2)
         {
@@ -224,6 +224,11 @@ public sealed class CommandParser
 
         return new ReportDayCommand(date);
     }
+
+    private static bool OutOfMassive(IReadOnlyList<string> tokens)
+    {
+        return tokens.Count < 2 || tokens[1].ToLowerInvariant() != "day";
+    }
 }
 
 public abstract record ParsedCommand;
@@ -247,6 +252,8 @@ public sealed record LimitSetCommand(decimal Amount) : ParsedCommand;
 public sealed record LimitShowCommand : ParsedCommand;
 
 public sealed record ReportDayCommand(DateOnly? Date) : ParsedCommand;
+
+
 
 
 
