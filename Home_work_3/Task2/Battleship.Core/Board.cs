@@ -1,5 +1,7 @@
 namespace Battleship.Core;
+// God object переделать 
 
+using BattleshipGame;
 public class Board
 {
     public List<Ship> Ships = new();
@@ -63,20 +65,20 @@ public class Board
         return IsStraightLine(normalized);
     }
 
-    public void GenerateRandomFleet(IReadOnlyList<int> shipLengths, int? seed = null)
+    public void GenerateRandomFleet(IReadOnlyList<ShipSpec> shipSpecs, int? seed = null)
     {
-        if (shipLengths.Count == 0)
-        {
-            throw new ArgumentException("Ship lengths list must not be empty.", nameof(shipLengths));
-        }
+        if (shipSpecs.Count == 0)
+            throw new ArgumentException("Ship specs list must not be empty.", nameof(shipSpecs));
+
+        var shipLengths = shipSpecs
+            .SelectMany(spec => Enumerable.Repeat(spec.Size, spec.Count))
+            .OrderByDescending(x => x)
+            .ToArray();
 
         if (shipLengths.Any(length => length <= 0))
-        {
-            throw new ArgumentException("All ship lengths must be positive.", nameof(shipLengths));
-        }
+            throw new ArgumentException("All ship lengths must be positive.", nameof(shipSpecs));
 
         var random = seed.HasValue ? new Random(seed.Value) : new Random();
-        var sortedLengths = shipLengths.OrderByDescending(x => x).ToArray();
 
         for (var attempt = 0; attempt < 200; attempt++)
         {
@@ -84,7 +86,7 @@ public class Board
             Shots.Clear();
             var success = true;
 
-            foreach (var shipLength in sortedLengths)
+            foreach (var shipLength in shipLengths)
             {
                 if (!TryPlaceRandomShip(shipLength, random))
                 {
@@ -94,9 +96,7 @@ public class Board
             }
 
             if (success)
-            {
                 return;
-            }
         }
 
         throw new InvalidOperationException("Failed to generate fleet for the current board size.");

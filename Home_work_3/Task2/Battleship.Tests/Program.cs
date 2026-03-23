@@ -82,7 +82,10 @@ static void GenerateRandomFleet_CreatesExpectedShipCount()
     board.GenerateRandomFleet(fleet, seed: 1);
 
     AssertEqual(fleet.Count, board.Ships.Count, "Fleet ship count must match.");
-    AssertEqual(fleet.Sum(), board.Ships.Sum(x => x.Cells.Count), "Total ship cells must match.");
+
+    int expectedCells = fleet.Sum(ship => ship.Size * ship.Count);
+    int actualCells = board.Ships.Sum(x => x.Cells.Count);
+    AssertEqual(expectedCells, actualCells, "Total ship cells must match.");
 }
 
 static void GenerateRandomFleet_HasNoTouchingShips()
