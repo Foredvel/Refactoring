@@ -1,5 +1,7 @@
 using Battleship.Core;
 
+using static Battleship.Core.ShotResult;
+
 var boardSize = ParseBoardSize(args);
 var settings = new GameSettings(boardSize);
 var board = new Board(size: settings.BoardSize);
@@ -7,7 +9,6 @@ board.GenerateRandomFleet(settings.Fleet);
 
 var game = new Game(board);
 var shotHistory = new Dictionary<Position, string>();
-var victoryMessage = new VictoryMessage();
 var boardLegend = new BoardLegend();
 
 Console.WriteLine("Battleship demo started.");
@@ -15,11 +16,13 @@ Console.WriteLine($"Board size: {boardSize}x{boardSize}. Enter coordinates as: r
 Console.WriteLine($"Fleet: {string.Join(", ", settings.Fleet)}");
 Console.WriteLine("Type 'q' to exit.");
 
+
+//Переделать на команду 
 while (true)
 {
     if (game.Board.AllShipsSunk())
     {
-        Console.WriteLine(victoryMessage.Message.Value);
+        Console.WriteLine("All ships are sunk. You win.");
         PrintBoard(game.Board, shotHistory);
         PrintLegend(boardLegend.Legend.Value);
         break;
