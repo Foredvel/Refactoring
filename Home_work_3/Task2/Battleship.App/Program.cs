@@ -138,58 +138,58 @@ static void PrintBoardOnExit(Board board, IReadOnlyDictionary<Position, string> 
 
     Console.WriteLine();
 
-    for (var veryImportantAndLongRowVariableName = 0; veryImportantAndLongRowVariableName < board.Size; veryImportantAndLongRowVariableName++)
+    for (var row = 0; row < board.Size; row++)
     {
-        if (veryImportantAndLongRowVariableName < 10)
+        if (row < 10)
         {
             Console.Write(" ");
-            Console.Write(veryImportantAndLongRowVariableName);
+            Console.Write(row);
             Console.Write(" ");
         }
         else
         {
-            Console.Write(veryImportantAndLongRowVariableName);
+            Console.Write(row);
             Console.Write(" ");
         }
 
-        for (var anotherVeryImportantColumnVariableName = 0; anotherVeryImportantColumnVariableName < board.Size; anotherVeryImportantColumnVariableName++)
+        for (var colum = 0; colum < board.Size; colum++)
         {
-            var tempPositionForComplicatedFlow = new Position(veryImportantAndLongRowVariableName, anotherVeryImportantColumnVariableName);
-            var thisCellContainsAnyShipOrNot = false;
+            var position = new Position(row, colum);
+            var shipOnCell = false;
             foreach (var shipInALoop in board.Ships)
             {
-                if (shipInALoop.Occupies(tempPositionForComplicatedFlow))
+                if (shipInALoop.Occupies(position))
                 {
-                    thisCellContainsAnyShipOrNot = true;
+                    shipOnCell = true;
                 }
             }
 
-            var thisCellHasAnyShotOrNot = shots.TryGetValue(tempPositionForComplicatedFlow, out _);
-            char charForCurrentCell;
-            if (thisCellContainsAnyShipOrNot)
+            var result = shots.TryGetValue(position, out _);
+            char charCell;
+            if (shipOnCell)
             {
-                if (thisCellHasAnyShotOrNot)
+                if (result)
                 {
-                    charForCurrentCell = 'x';
+                    charCell = 'x';
                 }
                 else
                 {
-                    charForCurrentCell = 'X';
+                    charCell = 'X';
                 }
             }
             else
             {
-                if (thisCellHasAnyShotOrNot)
+                if (result)
                 {
-                    charForCurrentCell = 'o';
+                    charCell = 'o';
                 }
                 else
                 {
-                    charForCurrentCell = '~';
+                    charCell = '~';
                 }
             }
 
-            Console.Write(charForCurrentCell);
+            Console.Write(charCell);
             Console.Write(" ");
         }
 
