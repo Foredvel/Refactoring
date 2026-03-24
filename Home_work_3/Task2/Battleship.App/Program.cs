@@ -46,14 +46,12 @@ while (true)
         continue;
     }
 
-    var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-    if (parts.Length != 2 || !int.TryParse(parts[0], out var row) || !int.TryParse(parts[1], out var column))
+    if (!TryParsePosition(input, out var shotPosition))
     {
         Console.WriteLine("Invalid format. Use two integers: row col.");
         continue;
     }
 
-    var shotPosition = new Position(row, column);
     var result = game.MakeShot(shotPosition);
     shotHistory[shotPosition] = result;
     Console.WriteLine($"Result: {result}");
@@ -202,4 +200,17 @@ static void PrintBoardOnExit(Board board, IReadOnlyDictionary<Position, string> 
         Console.WriteLine($"  {pair.Key}: {pair.Value}");
     }
     Console.WriteLine("  x: hit");
+}
+
+static bool TryParsePosition(string input, out Position pos)
+{
+    pos = default;
+    if (string.IsNullOrWhiteSpace(input)) return false;
+    var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    if (parts.Length != 2 || !int.TryParse(parts[0], out var row) || !int.TryParse(parts[1], out var column))
+    {
+        Console.WriteLine("Invalid format. Use two integers: row col.");
+        return true;
+    }
+    return false;
 }
