@@ -58,9 +58,9 @@ while (true)
 }
 //Здесь заканчивается  
 
-static void PrintBoard(Board board, IReadOnlyDictionary<Position, string> shots)
+static void PrintBoard(Board board, IReadOnlyDictionary<Position, string> shots, string name = "Final board:")
 {
-    Console.WriteLine("Final board:");
+    Console.WriteLine(name);
     Console.Write("   ");
     for (var c = 0; c < board.Size; c++)
     {
@@ -85,7 +85,7 @@ static void PrintBoard(Board board, IReadOnlyDictionary<Position, string> shots)
 
 static char GetCellSymbol(Board board, IReadOnlyDictionary<Position, string> shots, Position position)
 {
-    var hasShip = board.Ships.Any(s => s.Occupies(position)); //посмотреть что можно засунуть внутрь
+    var hasShip = board.Ships.Any(s => s.Occupies(position));
     var hasShot = shots.TryGetValue(position, out var result);
 
     if (hasShip)
@@ -96,9 +96,9 @@ static char GetCellSymbol(Board board, IReadOnlyDictionary<Position, string> sho
     return hasShot && result == ShotResults.Miss ? 'o' : '~';
 }
 
-static void PrintLegend(IReadOnlyDictionary<char, string> legend)
+static void PrintLegend(IReadOnlyDictionary<char, string> legend, string name = "Legend:")
 {
-    Console.WriteLine("Legend:");
+    Console.WriteLine(name);
     foreach (var item in legend)
     {
         Console.WriteLine($"  {item.Key}: {item.Value}");
@@ -123,84 +123,8 @@ static int ParseBoardSize(string[] args)
 
 static void PrintBoardOnExit(Board board, IReadOnlyDictionary<Position, string> shots, IReadOnlyDictionary<char, string> legend)
 {
-    Console.WriteLine("Board on exit:");
-
-    var limit = board.Size;
-    var col = 0;
-    Console.Write("   ");
-    while (col < limit)
-    {
-        Console.Write(col);
-        Console.Write(" ");
-        col = col + 1;
-    }
-
-    Console.WriteLine();
-
-    for (var row = 0; row < board.Size; row++)
-    {
-        if (row < 10)
-        {
-            Console.Write(" ");
-            Console.Write(row);
-            Console.Write(" ");
-        }
-        else
-        {
-            Console.Write(row);
-            Console.Write(" ");
-        }
-
-        for (var colum = 0; colum < board.Size; colum++)
-        {
-            var position = new Position(row, colum);
-            var shipOnCell = false;
-            foreach (var shipInALoop in board.Ships)
-            {
-                if (shipInALoop.Occupies(position))
-                {
-                    shipOnCell = true;
-                }
-            }
-
-            var result = shots.TryGetValue(position, out _);
-            char charCell;
-            if (shipOnCell)
-            {
-                if (result)
-                {
-                    charCell = 'x';
-                }
-                else
-                {
-                    charCell = 'X';
-                }
-            }
-            else
-            {
-                if (result)
-                {
-                    charCell = 'o';
-                }
-                else
-                {
-                    charCell = '~';
-                }
-            }
-
-            Console.Write(charCell);
-            Console.Write(" ");
-        }
-
-        Console.WriteLine();
-    }
-
-    Console.WriteLine("Legend on exit:");
-    foreach (var pair in legend)
-    {
-        Console.WriteLine($"  {pair.Key}: {pair.Value}");
-    }
-    Console.WriteLine("  x: hit");
+    PrintBoard(board, shots, "Board on exit:");
+    PrintLegend(legend, "Legend on exit:");
 }
 
 static bool TryParsePosition(string input, out Position pos)
