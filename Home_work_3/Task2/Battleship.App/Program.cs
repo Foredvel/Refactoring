@@ -1,13 +1,15 @@
 using Battleship.Core;
 
-using static Battleship.Core.ShotResult;
 
 var boardSize = ParseBoardSize(args);
 var settings = new GameSettings(boardSize);
 var board = new Board(size: settings.BoardSize);
-board.GenerateRandomFleet(settings.Fleet);
+var validator = new ShipPlacementValidator();
+var generator = new FleetGenerator(validator);
+generator.GenerateRandomFleet(board, settings.Fleet);
 
-var game = new Game(board);
+var engine = new GameEngine(validator);
+var game = new Game(board, engine);
 var shotHistory = new Dictionary<Position, string>();
 var boardLegend = new BoardLegend();
 
@@ -20,7 +22,7 @@ Console.WriteLine("Type 'q' to exit.");
 //Переделать на команду 
 while (true)
 {
-    if (game.Board.AllShipsSunk())
+    if (game.IsGameOver())
     {
         Console.WriteLine("All ships are sunk. You win.");
         PrintBoard(game.Board, shotHistory);
@@ -84,7 +86,7 @@ static void PrintBoard(Board board, IReadOnlyDictionary<Position, string> shots)
 
 static char GetCellSymbol(Board board, IReadOnlyDictionary<Position, string> shots, Position position)
 {
-    var hasShip = board.Ships.Any(s => s.Occupies(position));
+    var hasShip = board.Ships.Any(s => s.Occupies(position)); //посмотреть что можно засунуть внутрь
     var hasShot = shots.TryGetValue(position, out var result);
 
     if (hasShip)

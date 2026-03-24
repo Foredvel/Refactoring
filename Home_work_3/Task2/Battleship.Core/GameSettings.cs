@@ -1,4 +1,5 @@
 namespace Battleship.Core;
+
 using BattleshipGame;
 
 public class GameSettings

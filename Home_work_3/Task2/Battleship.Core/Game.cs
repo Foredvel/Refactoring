@@ -2,15 +2,23 @@ namespace Battleship.Core;
 
 public class Game
 {
-    public Board Board;
+    public Board Board { get; }
 
-    public Game(Board board)
+    private readonly GameEngine _engine;
+
+    public Game(Board board, GameEngine engine)
     {
         Board = board ?? throw new ArgumentNullException(nameof(board));
+        _engine = engine ?? throw new ArgumentNullException(nameof(engine));
     }
 
     public string MakeShot(Position position)
     {
-        return Board.Fire(position);
+        return _engine.Fire(Board, position);
+    }
+
+    public bool IsGameOver()
+    {
+        return _engine.AllShipsSunk(Board);
     }
 }
