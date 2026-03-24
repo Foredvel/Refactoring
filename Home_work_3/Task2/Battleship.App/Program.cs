@@ -19,7 +19,7 @@ Console.WriteLine($"Fleet: {string.Join(", ", settings.Fleet)}");
 Console.WriteLine("Type 'q' to exit.");
 
 
-//Переделать на команду 
+//Здесь начинается
 while (true)
 {
     if (game.IsGameOver())
@@ -56,6 +56,7 @@ while (true)
     shotHistory[shotPosition] = result;
     Console.WriteLine($"Result: {result}");
 }
+//Здесь заканчивается  
 
 static void PrintBoard(Board board, IReadOnlyDictionary<Position, string> shots)
 {
