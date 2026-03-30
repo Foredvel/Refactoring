@@ -32,28 +32,40 @@ return failed == 0 ? 0 : 1;
 static void Fire_ReturnsOutOfBounds_ForOutsidePosition()
 {
     var board = new Board(3);
-    var result = board.Fire(new Position(-1, 0));
+    var validator = new ShipPlacementValidator();
+    var engine = new GameEngine(validator);
+    var game = new Game(board, engine);
+
+    var result = game.MakeShot(new Position(-1, 0));
     AssertEqual(ShotResults.OutOfBounds, result, "Expected out of bounds for negative row.");
 }
 
 static void Fire_ReturnsHitThenSunk_ForShipCells()
 {
     var board = new Board(3);
-    board.PlaceShip(new Ship(new[] { new Position(0, 0), new Position(0, 1) }));
+    var validator = new ShipPlacementValidator();
+    var engine = new GameEngine(validator);
+    var game = new Game(board, engine);
 
-    var first = board.Fire(new Position(0, 0));
-    var second = board.Fire(new Position(0, 1));
+    board.Ships.Add(new Ship(new[] { new Position(0, 0), new Position(0, 1) }));
+
+    var first = game.MakeShot(new Position(0, 0));
+    var second = game.MakeShot(new Position(0, 1));
 
     AssertEqual(ShotResults.Hit, first, "First shot should be hit.");
     AssertEqual(ShotResults.Sunk, second, "Second shot should sink ship.");
-    AssertTrue(board.AllShipsSunk(), "AllShipsSunk should be true.");
+    AssertTrue(game.IsGameOver(), "AllShipsSunk should be true.");
 }
 
 static void Fire_ReturnsAlreadyShot_ForRepeatedPosition()
 {
     var board = new Board(3);
-    var first = board.Fire(new Position(1, 1));
-    var second = board.Fire(new Position(1, 1));
+    var validator = new ShipPlacementValidator();
+    var engine = new GameEngine(validator);
+    var game = new Game(board, engine);
+
+    var first = game.MakeShot(new Position(1, 1));
+    var second = game.MakeShot(new Position(1, 1));
 
     AssertEqual(ShotResults.Miss, first, "First shot should miss.");
     AssertEqual(ShotResults.AlreadyShot, second, "Second shot should be marked as already shot.");
@@ -62,33 +74,45 @@ static void Fire_ReturnsAlreadyShot_ForRepeatedPosition()
 static void PlaceShip_Throws_ForOverlappingShips()
 {
     var board = new Board(3);
-    board.PlaceShip(new Ship(new[] { new Position(1, 1) }));
+    var validator = new ShipPlacementValidator();
+    board.Ships.Add(new Ship(new[] { new Position(1, 1) }));
 
-    AssertThrows<InvalidOperationException>(() => board.PlaceShip(new Ship(new[] { new Position(1, 1) })));
+    AssertThrows<InvalidOperationException>(() => board.Ships.Add(new Ship(new[] { new Position(1, 1) })));
 }
 
 static void PlaceShip_Throws_ForDiagonalTouchingShips()
 {
     var board = new Board(5);
-    board.PlaceShip(new Ship(new[] { new Position(1, 1) }));
+    var validator = new ShipPlacementValidator();
 
-    AssertThrows<InvalidOperationException>(() => board.PlaceShip(new Ship(new[] { new Position(2, 2) })));
+    board.Ships.Add(new Ship(new[] { new Position(1, 1) }));
+
+    AssertThrows<InvalidOperationException>(() => board.Ships.Add(new Ship(new[] { new Position(2, 2) })));
 }
 
 static void GenerateRandomFleet_CreatesExpectedShipCount()
 {
     var board = new Board(10);
+    var validator = new ShipPlacementValidator();
+    var generator = new FleetGenerator(validator);
     var fleet = FleetFactory.CreateForBoardSize(10);
-    board.GenerateRandomFleet(fleet, seed: 1);
+
+    generator.GenerateRandomFleet(board, fleet, seed: 1);
 
     AssertEqual(fleet.Count, board.Ships.Count, "Fleet ship count must match.");
-    AssertEqual(fleet.Sum(), board.Ships.Sum(x => x.Cells.Count), "Total ship cells must match.");
+
+    int expectedCells = fleet.Sum(ship => ship.Size * ship.Count);
+    int actualCells = board.Ships.Sum(x => x.Cells.Count);
+    AssertEqual(expectedCells, actualCells, "Total ship cells must match.");
 }
 
 static void GenerateRandomFleet_HasNoTouchingShips()
 {
     var board = new Board(10);
-    board.GenerateRandomFleet(FleetFactory.CreateForBoardSize(10), seed: 2);
+    var validator = new ShipPlacementValidator();
+    var generator = new FleetGenerator(validator);
+
+    generator.GenerateRandomFleet(board, FleetFactory.CreateForBoardSize(10), seed: 2);
 
     for (var i = 0; i < board.Ships.Count; i++)
     {
