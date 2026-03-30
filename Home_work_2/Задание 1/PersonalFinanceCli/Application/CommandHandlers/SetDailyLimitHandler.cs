@@ -1,5 +1,6 @@
 using PersonalFinanceCli.Application.Repositories;
 using PersonalFinanceCli.Infrastructure.Time;
+using static Validation.Utility.ValidationOperation;
 
 namespace PersonalFinanceCli.Application.CommandHandlers;
 
@@ -18,16 +19,10 @@ public sealed class SetDailyLimitHandler
 
     public void Handle(decimal amount)
     {
-        if (amount <= 0)
-        {
-            throw new InvalidOperationException("Limit must be > 0.");
-        }
+        ErrorCatcher(amount <= 0, Error.LimitMustBePositive);
 
         var cards = _cardRepository.GetAll();
-        if (cards.Count == 0)
-        {
-            throw new InvalidOperationException("Cannot set limit without cards.");
-        }
+        ErrorCatcher(cards.Count == 0, Error.CannotSetLimitWithoutCards);
 
         var currency = _cardRepository.GetDefault()?.Currency
             ?? _cardRepository.GetFirst()?.Currency

@@ -2,6 +2,7 @@ using PersonalFinanceCli.Application.Repositories;
 using PersonalFinanceCli.Domain.Entities;
 using PersonalFinanceCli.Domain.ValueObjects;
 using PersonalFinanceCli.Infrastructure.Time;
+using static Validation.Utility.ValidationOperation;
 
 namespace PersonalFinanceCli.Application.CommandHandlers;
 
@@ -14,6 +15,7 @@ public sealed class AddTransactionHandler
     private readonly ICardRepository _cardRepository;
     private readonly IClock _clock;
 
+
     public AddTransactionHandler(
         ITransactionRepository transactionRepository,
         ICardRepository cardRepository,
@@ -24,6 +26,19 @@ public sealed class AddTransactionHandler
         _clock = clock;
     }
 
+    private Transaction CreateTransaction(int cardId, decimal amount, string category, DateOnly date, string note, TransactionType type)
+    {
+        return new Transaction
+        {
+            CardId = cardId,
+            Amount = amount,
+            Category = category,
+            Date = date,
+            Note = note,
+            Type = type
+        };
+    }
+
     public Transaction Handle(
         TransactionType type,
         decimal amount,
@@ -32,45 +47,30 @@ public sealed class AddTransactionHandler
         DateOnly? date,
         string? note)
     {
-        if (amount <= 0)
-        {
-            throw new InvalidOperationException("Amount must be > 0.");
-        }
+        
+        ErrorCatcher(amount <= 0, Error.AmountMustBePositive);
 
-        if (string.IsNullOrWhiteSpace(category))
-        {
-            throw new InvalidOperationException("Category cannot be empty.");
-        }
+
+
+        ErrorCatcher(string.IsNullOrWhiteSpace(category), Error.CategoryCannotBeEmpty);
+
 
         var resolvedCardId = EnsureCardSelectedFallback(cardId, type);
         var selectedCard = _cardRepository.GetById(resolvedCardId);
-        if (selectedCard is null)
-        {
-            throw new InvalidOperationException("Card not found.");
-        }
+        ErrorCatcher(selectedCard is null, Error.CardNotFound);
 
-        var trx = new Transaction
-        {
-            CardId = resolvedCardId,
-            Amount = amount,
-            Category = category,
-            Date = date ?? _clock.Today,
-            Note = note,
-            Type = type
-        };
+        var trx = CreateTransaction(resolvedCardId, amount, category, date ?? _clock.Today, note, type);
 
         return _transactionRepository.Add(trx);
     }
+
 
     public int EnsureCardSelectedFallback(int? cardId, TransactionType type)
     {
         if (cardId.HasValue)
         {
             var byId = _cardRepository.GetById(cardId.Value);
-            if (byId == null)
-            {
-                throw new InvalidOperationException("Card not found.");
-            }
+            ErrorCatcher(byId == null, Error.CardNotFound);
 
             return byId.Id;
         }
@@ -89,7 +89,7 @@ public sealed class AddTransactionHandler
                 return firstByStorePath.Id;
             }
 
-            throw new InvalidOperationException("No cards available.");
+            ErrorCatcher(false, Error.NoCardsAvailable);
         }
 
         var defaultByFlag = _cardRepository.GetDefault();
@@ -99,10 +99,7 @@ public sealed class AddTransactionHandler
         }
 
         var firstByFlagPath = _cardRepository.GetFirst();
-        if (firstByFlagPath == null)
-        {
-            throw new InvalidOperationException("No cards available.");
-        }
+        ErrorCatcher(firstByFlagPath == null, Error.NoCardsAvailable);
 
         return firstByFlagPath.Id;
     }
@@ -134,24 +131,8 @@ public sealed class AddTransactionHandler
     {
         var transferDate = date ?? _clock.Today;
 
-        _transactionRepository.Add(new Transaction
-        {
-            CardId = fromCardId,
-            Amount = amount,
-            Category = TransferToCushion,
-            Date = transferDate,
-            Note = "auto",
-            Type = TransactionType.Expense
-        });
+        _transactionRepository.Add(CreateTransaction(fromCardId, amount, TransferToCushion, transferDate, "auto", TransactionType.Expense));
 
-        _transactionRepository.Add(new Transaction
-        {
-            CardId = cushionCardId,
-            Amount = amount,
-            Category = TransferFromIncome,
-            Date = transferDate,
-            Note = "auto",
-            Type = TransactionType.Income
-        });
+        _transactionRepository.Add(CreateTransaction(cushionCardId, amount, TransferFromIncome, transferDate, "auto", TransactionType.Income));
     }
 }

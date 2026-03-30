@@ -2,6 +2,7 @@ using PersonalFinanceCli.Application.Repositories;
 using PersonalFinanceCli.Domain.Entities;
 using PersonalFinanceCli.Domain.ValueObjects;
 using PersonalFinanceCli.Infrastructure.Time;
+using static Validation.Utility.ValidationOperation;
 
 namespace PersonalFinanceCli.Application.CommandHandlers;
 
@@ -23,24 +24,15 @@ public sealed class AddExpenseHandler
 
     public Transaction Handle(decimal amount, string category, int? cardId, DateOnly? date, string? note)
     {
-        if (amount <= 0)
-        {
-            throw new InvalidOperationException("Amount must be > 0.");
-        }
+        ErrorCatcher(amount <= 0, Error.AmountMustBePositive);
 
-        if (string.IsNullOrWhiteSpace(category))
-        {
-            throw new InvalidOperationException("Category cannot be empty.");
-        }
+        ErrorCatcher(string.IsNullOrWhiteSpace(category), Error.CategoryCannotBeEmpty);
 
         int resolvedCardId;
         if (cardId.HasValue)
         {
             var byId = _cardRepository.GetById(cardId.Value);
-            if (byId == null)
-            {
-                throw new InvalidOperationException("Card not found.");
-            }
+            ErrorCatcher(byId == null, Error.CardNotFound);
 
             resolvedCardId = byId.Id;
         }
@@ -54,10 +46,7 @@ public sealed class AddExpenseHandler
             else
             {
                 var first = _cardRepository.GetFirst();
-                if (first == null)
-                {
-                    throw new InvalidOperationException("No cards available.");
-                }
+                ErrorCatcher(first == null, Error.NoCardsAvailable);
 
                 resolvedCardId = first.Id;
             }

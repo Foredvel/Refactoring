@@ -1,6 +1,7 @@
 using PersonalFinanceCli.Application.Repositories;
 using PersonalFinanceCli.Domain.Services;
 using PersonalFinanceCli.Domain.ValueObjects;
+using PersonalFinanceCli.Domain.Entities;
 using System.Globalization;
 
 namespace PersonalFinanceCli.Presentation.Rendering;
@@ -170,12 +171,12 @@ public sealed class ReportPrinter
     private Dictionary<string, decimal> RecalculateCategories(DateOnly date, Currency currency)
     {
         var cards = _cardRepository.GetAll();
-        var cardIds = cards.Where(c => c.Currency == currency).Select(c => c.Id).ToHashSet();
+        var cardIds = cards.Where(c => c.Currency == currency).Select(c => c.Id).ToList();
         var byCategory = new Dictionary<string, decimal>(StringComparer.Ordinal);
 
         foreach (var trx in _transactionRepository.GetAll())
         {
-            if (trx.Date != date || trx.Type != TransactionType.Expense || !cardIds.Contains(trx.CardId))
+            if (TellingName(trx, date, cardIds))
             {
                 continue;
             }
@@ -191,6 +192,11 @@ public sealed class ReportPrinter
         }
 
         return byCategory;
+    }
+
+    private static bool TellingName(Transaction trx, DateOnly date, IReadOnlyList<int> cardIds)
+    {
+        return (trx.Date != date || trx.Type != TransactionType.Expense || !cardIds.Contains(trx.CardId));
     }
 
     public static string FormatMoney(decimal amount, Currency currency)
