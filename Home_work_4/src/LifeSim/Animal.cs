@@ -31,6 +31,8 @@ public abstract class Animal : Organism
 
     public override void Tick()
     {
+        double frequency = 0.2; 
+
         base.Tick();
 
         var prey = FindPrey();
@@ -61,7 +63,7 @@ public abstract class Animal : Organism
             }
         }
 
-        if (Energy <= 0 || (Age > MaxAge && Rand.Chance(0.02)))
+        if (Energy <= 0 || (Age > MaxAge && Rand.Chance(frequency)))
         {
             World.Remove(this);
         }
