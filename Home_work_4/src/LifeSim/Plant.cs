@@ -19,6 +19,7 @@ public class Plant : Organism
 
     public override void Tick()
     {
+        double frequency = 0.01;
         base.Tick();
 
         if (Age >= MatureAge && Rand.Chance(SpreadChance))
@@ -30,7 +31,7 @@ public class Plant : Organism
             }
         }
 
-        if (Age > MaxAge && Rand.Chance(0.01))
+        if (Age > MaxAge && Rand.Chance(frequency))
         {
             World.Remove(this);
         }
