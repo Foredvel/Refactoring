@@ -4,6 +4,7 @@ namespace LifeSim;
 
 public abstract class Organism
 {
+    private const double propability = 0.5;
     protected Organism(World world, Point2 pos, Gender? gender = null)
     {
         World = world;
@@ -35,5 +36,5 @@ public abstract class Organism
 
     public virtual void Tick() => Age++;
 
-    private static Gender PickGender() => Rand.Chance(0.5) ? Gender.Female : Gender.Male;
+    private static Gender PickGender() => Rand.Chance(propability) ? Gender.Female : Gender.Male;
 }
