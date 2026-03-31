@@ -19,7 +19,7 @@ public abstract class Animal : Organism
 
     protected abstract int ReproduceThreshold { get; }
 
-    protected abstract int InitialEnergy { get; }
+    protected abstract int Energy { get; set; }
 
     protected abstract char SelfGlyph { get; }
 
@@ -27,24 +27,19 @@ public abstract class Animal : Organism
 
     public override ConsoleColor? Color => ConsoleColor.White;
 
-    public int Energy { get; set; }
-
     public int MaxAge { get; set; } = 1000;
 
     public override void Tick()
     {
-        base.Tick();
+        double frequency = 0.2; 
 
-        if (Age == 1 && Energy == 0)
-        {
-            Energy = InitialEnergy;
-        }
+        base.Tick();
 
         var prey = FindPrey();
         if (prey != null)
         {
             StepToward(prey.Pos);
-            if (AreNeighborsOrSame(Pos, prey.Pos) && prey.IsAlive)
+            if (Point2.AreNeighborsOrSame(Pos, prey.Pos) && prey.IsAlive)
             {
                 World.Remove(prey);
                 Energy += BiteGain;
@@ -68,7 +63,7 @@ public abstract class Animal : Organism
             }
         }
 
-        if (Energy <= 0 || (Age > MaxAge && Rand.Chance(0.02)))
+        if (Energy <= 0 || (Age > MaxAge && Rand.Chance(frequency)))
         {
             World.Remove(this);
         }
@@ -78,10 +73,8 @@ public abstract class Animal : Organism
 
     protected abstract Animal MakeChild(Point2 p);
 
-    protected static bool AreNeighborsOrSame(Point2 a, Point2 b) =>
-        Math.Abs(a.X - b.X) <= 1 && Math.Abs(a.Y - b.Y) <= 1;
 
-    protected void StepToward(Point2 target)
+    protected void StepToward(Point2 target) //в т еории это кинуть в ворлд
     {
         var dx = BestToroidalStep(Pos.X, target.X, World.Width);
         var dy = BestToroidalStep(Pos.Y, target.Y, World.Height);

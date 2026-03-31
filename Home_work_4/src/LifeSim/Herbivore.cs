@@ -2,9 +2,10 @@ namespace LifeSim;
 
 public class Herbivore : Animal
 {
-    public Herbivore(World world, Point2 pos, Gender? gender = null)
+    public Herbivore(World world, Point2 pos, Gender? gender = null, int startEnergy = 30)
         : base(world, pos, gender)
     {
+        Energy = startEnergy;
     }
 
     protected override int Vision => 8;
@@ -15,7 +16,7 @@ public class Herbivore : Animal
 
     protected override int ReproduceThreshold => 60;
 
-    protected override int InitialEnergy => 30;
+    protected override int Energy { get; set; }
 
     protected override char SelfGlyph => 'h';
 

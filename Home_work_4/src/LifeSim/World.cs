@@ -199,4 +199,9 @@ public class World
         var diff = Math.Abs(a - b);
         return Math.Min(diff, size - diff);
     }
+
+    public int GetPopulationAll<T>()
+    {
+        return All.OfType<T>().Count();
+    }
 }
