@@ -2,9 +2,10 @@ namespace LifeSim;
 
 public class Predator : Animal
 {
-    public Predator(World world, Point2 pos, Gender? gender = null)
+    public Predator(World world, Point2 pos, Gender? gender = null, int startEnergy = 40)
         : base(world, pos, gender)
     {
+        Energy = startEnergy;
     }
 
     protected override int Vision => 12;
@@ -15,7 +16,7 @@ public class Predator : Animal
 
     protected override int ReproduceThreshold => 80;
 
-    protected override int InitialEnergy => 40;
+    protected override int Energy { get; set; }
 
     protected override char SelfGlyph => 'W';
 

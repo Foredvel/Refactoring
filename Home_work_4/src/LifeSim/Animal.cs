@@ -19,7 +19,7 @@ public abstract class Animal : Organism
 
     protected abstract int ReproduceThreshold { get; }
 
-    protected abstract int InitialEnergy { get; }
+    protected abstract int Energy { get; set; }
 
     protected abstract char SelfGlyph { get; }
 
@@ -27,18 +27,11 @@ public abstract class Animal : Organism
 
     public override ConsoleColor? Color => ConsoleColor.White;
 
-    public int Energy { get; set; }
-
     public int MaxAge { get; set; } = 1000;
 
     public override void Tick()
     {
         base.Tick();
-
-        if (Age == 1 && Energy == 0)
-        {
-            Energy = InitialEnergy;
-        }
 
         var prey = FindPrey();
         if (prey != null)
@@ -81,7 +74,7 @@ public abstract class Animal : Organism
     protected static bool AreNeighborsOrSame(Point2 a, Point2 b) =>
         Math.Abs(a.X - b.X) <= 1 && Math.Abs(a.Y - b.Y) <= 1;
 
-    protected void StepToward(Point2 target)
+    protected void StepToward(Point2 target) //в т еории это кинуть в ворлд
     {
         var dx = BestToroidalStep(Pos.X, target.X, World.Width);
         var dy = BestToroidalStep(Pos.Y, target.Y, World.Height);
